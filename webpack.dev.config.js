@@ -2,19 +2,20 @@ const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const TersetJSPlugin = require('terser-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
-    entry: {
-        app: path.resolve(__dirname, 'index.js'),
-    },
-    mode: 'production',
+    entry: path.resolve(__dirname, 'index.js'),
+    mode: 'development',
     output: {
         path: path.resolve(__dirname, 'docs'),
-        filename: '[name].[chunkhash].js',
+        filename: '[name]-[chunkhash].js',
         chunkFilename: 'js/[id].[chunkhash].js'
+    },
+    devServer: {
+        contentBase: path.resolve(__dirname, 'docs'),
+        hot: true,
+        open: true,
+        port: 8080
     },
     module: {
         rules: [
@@ -37,12 +38,10 @@ module.exports = {
             {
                 test: /\.jpg|png|gif|woff|eot|ttf|svg|mp4|webm$/,
                 use: {
-                    loader: 'url-loader',
-                    options: {
-                        limit: 1000,
-                        name: '[chunkhash].[ext]',
-                        outputPath: 'assets'
-                    }
+                  loader: 'file-loader',
+                  options: {
+                    outputPath: 'assets/'
+                  }
                 }
             },
             {
@@ -58,24 +57,20 @@ module.exports = {
         ]
     },
     plugins: [
+        new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, './index.html')
         }),
         new MiniCssExtractPlugin({
-            filename: 'css/[name].[chunkhash].css',
-            chunkFilename: 'css/[id].[chunkhash].css'
-        }),
-        new webpack.DllReferencePlugin({
-            manifest: require('./modules-manifest.json')
-        }),
-        new CleanWebpackPlugin({
-            cleanOnceBeforeBuildPatterns: ['**/app.*']
-        })
+            filename: 'css/[name].css',
+            chunkFilename: 'css/[name].id.css'
+        })    
     ],
     optimization: {
-        minimizer: [
-            new TersetJSPlugin(),
-            new OptimizeCSSAssetsPlugin()
-        ]
+        splitChunks: {
+            chunks: 'all',
+            minSize: 0,
+            name: 'commons'
+        }
     }
 }
