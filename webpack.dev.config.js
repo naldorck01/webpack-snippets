@@ -17,6 +17,11 @@ module.exports = {
         open: true,
         port: 8080
     },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'docs')
+        }
+    },
     module: {
         rules: [
             {
